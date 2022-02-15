@@ -1,0 +1,25 @@
+From 1589af4e44e567596d2b980db61a4a7a5a8b611d Mon Sep 17 00:00:00 2001
+From: ThibaultBee <thibault@api.video>
+Date: Thu, 10 Mar 2022 10:23:31 +0100
+Subject: [PATCH] Fix AMF_EncodeString size check
+
+---
+ librtmp/amf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/librtmp/amf.c b/librtmp/amf.c
+index 7954144..2644624 100644
+--- a/librtmp/amf.c
++++ b/librtmp/amf.c
+@@ -174,7 +174,7 @@ char *
+ AMF_EncodeString(char *output, char *outend, const AVal *bv)
+ {
+   if ((bv->av_len < 65536 && output + 1 + 2 + bv->av_len > outend) ||
+-	output + 1 + 4 + bv->av_len > outend)
++  (bv->av_len >= 65536 && output + 1 + 4 + bv->av_len > outend))
+     return NULL;
+ 
+   if (bv->av_len < 65536)
+-- 
+2.34.1
+

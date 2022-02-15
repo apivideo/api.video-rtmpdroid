@@ -1,0 +1,101 @@
+From a04498ccf4b69572ea86912a8a0010d6d8896bce Mon Sep 17 00:00:00 2001
+From: ThibaultBee <thibault@api.video>
+Date: Fri, 11 Feb 2022 16:52:29 +0100
+Subject: [PATCH] Add CMakeLists.txt
+
+---
+ CMakeLists.txt | 81 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
+ create mode 100644 CMakeLists.txt
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..2fdfe91
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,81 @@
++cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
++
++project(RTMP VERSION "2.4" LANGUAGES C)
++add_definitions(-DRTMPDUMP_VERSION="v${PROJECT_VERSION}")
++
++option(ENABLE_EXAMPLES "Should the example be built?" ON)
++option(ENABLE_SHARED "Should librtmp be built as a shared library" ON)
++option(ENABLE_STATIC "Should librtmp be built as a static library" ON)
++set(CRYPTO OPENSSL CACHE STRING "Set crypto library")
++set_property(CACHE CRYPTO PROPERTY STRINGS OPENSSL GNUTLS POLARSSL)
++
++# librtmp
++file(GLOB SOURCES ./librtmp/*.c)
++file(GLOB HEADERS ./librtmp/rtmp.h ./librtmp/amf.h ./librtmp/log.h)
++if(ENABLE_SHARED)
++    add_library(rtmp_shared SHARED ${SOURCES})
++    set_property(TARGET rtmp_shared PROPERTY OUTPUT_NAME rtmp)
++    list(APPEND INSTALL_TARGETS rtmp_shared)
++endif()
++if(ENABLE_STATIC)
++    add_library(rtmp_static STATIC ${SOURCES})
++    set_property(TARGET rtmp_static PROPERTY OUTPUT_NAME rtmp)
++    list(APPEND INSTALL_TARGETS rtmp_static)
++endif()
++
++
++find_package(ZLIB REQUIRED)
++if(CRYPTO STREQUAL "POLARSSL")
++    find_package(PolarSSL REQUIRED)
++    set(SSL_LIBRARIES ${POLARSSL_LIBRARIES})
++    set(SSL_INCLUDE_DIRS ${POLARSSL_INCLUDE_DIR})
++elseif(CRYPTO STREQUAL "GNUTLS")
++    find_package(GnuTLS REQUIRED)
++    set(SSL_LIBRARIES ${GNUTLS_LIBRARIES})
++    set(SSL_INCLUDE_DIRS ${GNUTLS_INCLUDE_DIR})
++elseif(CRYPTO STREQUAL "OPENSSL")
++    find_package(OpenSSL REQUIRED)
++    set(SSL_LIBRARIES ${OPENSSL_LIBRARIES})
++    set(SSL_INCLUDE_DIRS ${OPENSSL_INCLUDE_DIR})
++else()
++    message(FATAL_ERROR "Unknown crypto lib")
++endif()
++
++if(ENABLE_SHARED)
++    target_include_directories(rtmp_shared PRIVATE  ${SSL_INCLUDE_DIRS})
++    target_link_libraries(rtmp_shared PRIVATE ${SSL_LIBRARIES} ${ZLIB_LIBRARIES})
++endif()
++if(ENABLE_STATIC)
++    target_include_directories(rtmp_static PRIVATE  ${SSL_INCLUDE_DIRS})
++    target_link_libraries(rtmp_static PRIVATE ${SSL_LIBRARIES} ${ZLIB_LIBRARIES})
++endif()
++
++# Examples
++if(ENABLE_EXAMPLES)
++    if(ENABLE_STATIC)
++        set(LINK_LIBRARY rtmp_static)
++    elseif(ENABLE_SHARED)
++        set(LINK_LIBRARY rtmp_shared)
++    endif()
++
++    add_executable(rtmpdump rtmpdump.c)
++    target_link_libraries(rtmpdump ${LINK_LIBRARY})
++
++    add_executable(rtmpsrv rtmpsrv.c thread.c)
++    target_link_libraries(rtmpsrv ${LINK_LIBRARY})
++
++    add_executable(rtmpsuck rtmpsuck.c thread.c)
++    target_link_libraries(rtmpsuck ${LINK_LIBRARY})
++
++    add_executable(rtmpgw rtmpgw.c thread.c)
++    target_link_libraries(rtmpgw ${LINK_LIBRARY})
++    list (APPEND INSTALL_TARGETS rtmpdump rtmpsrv rtmpsuck rtmpgw)
++endif()
++
++# Install
++install(TARGETS ${INSTALL_TARGETS}
++		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
++install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/librtmp)
+\ No newline at end of file
+-- 
+2.34.1
+

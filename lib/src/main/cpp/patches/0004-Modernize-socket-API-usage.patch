@@ -1,0 +1,163 @@
+From edea9d7c79321b57b072f0ca10fdb2a4a669dc30 Mon Sep 17 00:00:00 2001
+From: ThibaultBee <thibault@api.video>
+Date: Wed, 16 Mar 2022 16:24:29 +0100
+Subject: [PATCH] Modernize socket API usage
+
+---
+ librtmp/rtmp.c | 65 ++++++++++++++++++++++++++++++--------------------
+ librtmp/rtmp.h |  2 +-
+ 2 files changed, 40 insertions(+), 27 deletions(-)
+
+diff --git a/librtmp/rtmp.c b/librtmp/rtmp.c
+index 0865689..43476ee 100644
+--- a/librtmp/rtmp.c
++++ b/librtmp/rtmp.c
+@@ -28,6 +28,7 @@
+ #include <string.h>
+ #include <assert.h>
+ #include <time.h>
++#include <sys/socket.h>
+ 
+ #include "rtmp_sys.h"
+ #include "log.h"
+@@ -867,7 +868,7 @@ int RTMP_SetupURL(RTMP *r, char *url)
+ }
+ 
+ static int
+-add_addr_info(struct sockaddr_in *service, AVal *host, int port)
++add_addr_info(struct sockaddr *service, int *service_size, AVal *host, int port)
+ {
+   char *hostname;
+   int ret = TRUE;
+@@ -882,20 +883,29 @@ add_addr_info(struct sockaddr_in *service, AVal *host, int port)
+       hostname = host->av_val;
+     }
+ 
+-  service->sin_addr.s_addr = inet_addr(hostname);
+-  if (service->sin_addr.s_addr == INADDR_NONE)
+-    {
+-      struct hostent *host = gethostbyname(hostname);
+-      if (host == NULL || host->h_addr == NULL)
+-	{
+-	  RTMP_Log(RTMP_LOGERROR, "Problem accessing the DNS. (addr: %s)", hostname);
+-	  ret = FALSE;
+-	  goto finish;
+-	}
+-      service->sin_addr = *(struct in_addr *)host->h_addr;
++    // Get hostname type: IPv4 or IPv6
++    struct addrinfo hint = {0};
++    struct addrinfo *ai = NULL;
++    hint.ai_family = PF_UNSPEC;
++   // hint.ai_flags = AI_NUMERICHOST | AI_ADDRCONFIG;
++    char aiservice[11] = {0};
++    sprintf(aiservice, "%d", port);
++
++    if (getaddrinfo(hostname, aiservice, &hint, &ai)) {
++        ret = FALSE;
++        goto finish;
+     }
+ 
+-  service->sin_port = htons(port);
++    if ((ai->ai_family != AF_INET) && (ai->ai_family != AF_INET6)) {
++        freeaddrinfo(ai);
++        ret = FALSE;
++        goto finish;
++    }
++
++    *service_size = ai->ai_addrlen;
++    memcpy(service, ai->ai_addr, ai->ai_addrlen);
++
++    freeaddrinfo(ai);
+ finish:
+   if (hostname != host->av_val)
+     free(hostname);
+@@ -903,17 +913,17 @@ finish:
+ }
+ 
+ int
+-RTMP_Connect0(RTMP *r, struct sockaddr * service)
++RTMP_Connect0(RTMP *r, struct sockaddr * service, int service_size)
+ {
+   int on = 1;
+   r->m_sb.sb_timedout = FALSE;
+   r->m_pausing = 0;
+   r->m_fDuration = 0.0;
+ 
+-  r->m_sb.sb_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
++  r->m_sb.sb_socket = socket(service->sa_family, SOCK_STREAM, IPPROTO_TCP);
+   if (r->m_sb.sb_socket != -1)
+     {
+-      if (connect(r->m_sb.sb_socket, service, sizeof(struct sockaddr)) < 0)
++      if (connect(r->m_sb.sb_socket, (struct sockaddr *)service, service_size) < 0)
+ 	{
+ 	  int err = GetSockError();
+ 	  RTMP_Log(RTMP_LOGERROR, "%s, failed to connect socket. %d (%s)",
+@@ -1030,27 +1040,27 @@ RTMP_Connect1(RTMP *r, RTMPPacket *cp)
+ int
+ RTMP_Connect(RTMP *r, RTMPPacket *cp)
+ {
+-  struct sockaddr_in service;
++  struct sockaddr_storage service;
++  int service_size = 0;
+   if (!r->Link.hostname.av_len)
+     return FALSE;
+ 
+-  memset(&service, 0, sizeof(struct sockaddr_in));
+-  service.sin_family = AF_INET;
++  memset(&service, 0, sizeof(struct sockaddr_storage));
+ 
+   if (r->Link.socksport)
+     {
+       /* Connect via SOCKS */
+-      if (!add_addr_info(&service, &r->Link.sockshost, r->Link.socksport))
++      if (!add_addr_info((struct sockaddr *)&service, &service_size, &r->Link.sockshost, r->Link.socksport))
+ 	return FALSE;
+     }
+   else
+     {
+       /* Connect directly */
+-      if (!add_addr_info(&service, &r->Link.hostname, r->Link.port))
++      if (!add_addr_info((struct sockaddr *)&service, &service_size, &r->Link.hostname, r->Link.port))
+ 	return FALSE;
+     }
+ 
+-  if (!RTMP_Connect0(r, (struct sockaddr *)&service))
++  if (!RTMP_Connect0(r, (struct sockaddr *)&service, service_size))
+     return FALSE;
+ 
+   r->m_bSendCounter = TRUE;
+@@ -1062,11 +1072,14 @@ static int
+ SocksNegotiate(RTMP *r)
+ {
+   unsigned long addr;
+-  struct sockaddr_in service;
+-  memset(&service, 0, sizeof(struct sockaddr_in));
++  struct sockaddr_storage service;
++  int service_size = 0;
++  memset(&service, 0, sizeof(struct sockaddr_storage));
+ 
+-  add_addr_info(&service, &r->Link.hostname, r->Link.port);
+-  addr = htonl(service.sin_addr.s_addr);
++  add_addr_info((struct sockaddr *)&service, &service_size, &r->Link.hostname, r->Link.port);
++  if (service.ss_family == AF_INET) {
++     // addr = htonl(((struct sockaddr_in)service).sin_addr.s_addr)
++  }
+ 
+   {
+     char packet[] = {
+diff --git a/librtmp/rtmp.h b/librtmp/rtmp.h
+index 6d7dd89..e7c6cf2 100644
+--- a/librtmp/rtmp.h
++++ b/librtmp/rtmp.h
+@@ -311,7 +311,7 @@ extern "C"
+ 
+   int RTMP_Connect(RTMP *r, RTMPPacket *cp);
+   struct sockaddr;
+-  int RTMP_Connect0(RTMP *r, struct sockaddr *svc);
++  int RTMP_Connect0(RTMP *r, struct sockaddr * service, int service_size);
+   int RTMP_Connect1(RTMP *r, RTMPPacket *cp);
+   int RTMP_Serve(RTMP *r);
+   int RTMP_TLS_Accept(RTMP *r, void *ctx);
+-- 
+2.34.1
+
