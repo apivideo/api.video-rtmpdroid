@@ -1,0 +1,37 @@
+name: Run tests
+
+on: [push]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Run unit test
+        run: ./gradlew test
+  instrumented-tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Run Android Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          script: ./gradlew connectedCheck
+        env:
+          INTEGRATION_TESTS_API_TOKEN: ${{ secrets.INTEGRATION_TESTS_API_TOKEN }}
