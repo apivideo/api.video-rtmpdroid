@@ -4,7 +4,7 @@
 #include "librtmp/rtmp.h"
 #include "librtmp/log.h"
 
-#include "RTMPWrapper.h"
+#include "models/RtmpWrapper.h"
 #include "Log.h"
 #include "models/RtmpPacket.h"
 
@@ -19,15 +19,21 @@ nativeAlloc(JNIEnv *env, jobject thiz) {
     if (rtmp != nullptr) {
         RTMP_Init(rtmp);
     }
-    return reinterpret_cast<jlong>(rtmp);
+    rtmp_context *rtmp_context = static_cast<struct rtmp_context *>(malloc(sizeof(rtmp_context)));
+    rtmp_context->rtmp = rtmp;
+    rtmp_context->url = nullptr;
+    return reinterpret_cast<jlong>(rtmp_context);
 }
 
 JNIEXPORT jint JNICALL
 nativeSetupURL(JNIEnv *env, jobject thiz, jstring jurl) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+
     char *url = const_cast<char *>(env->GetStringUTFChars(jurl, nullptr));
-    int res = RTMP_SetupURL(rtmp, url);
+    rtmp_context->url = strdup(url);
     env->ReleaseStringUTFChars(jurl, url);
+
+    int res = RTMP_SetupURL(rtmp_context->rtmp, rtmp_context->url);
     if (res == FALSE) {
         LOGE("Can't parse url'%s'", url);
         return -1;
@@ -38,8 +44,8 @@ nativeSetupURL(JNIEnv *env, jobject thiz, jstring jurl) {
 
 JNIEXPORT jint JNICALL
 nativeConnect(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    int res = RTMP_Connect(rtmp, nullptr);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    int res = RTMP_Connect(rtmp_context->rtmp, nullptr);
     if (res == FALSE) {
         LOGE("Can't connect");
         return -1;
@@ -50,8 +56,8 @@ nativeConnect(JNIEnv *env, jobject thiz) {
 
 JNIEXPORT jint JNICALL
 nativeConnectStream(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    int res = RTMP_ConnectStream(rtmp, 0);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    int res = RTMP_ConnectStream(rtmp_context->rtmp, 0);
     if (res == FALSE) {
         LOGE("Can't connect stream");
         return -1;
@@ -61,54 +67,54 @@ nativeConnectStream(JNIEnv *env, jobject thiz) {
 
 JNIEXPORT void JNICALL
 nativeDeleteStream(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    RTMP_DeleteStream(rtmp);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    RTMP_DeleteStream(rtmp_context->rtmp);
 }
 
 JNIEXPORT void JNICALL
 nativeEnableWrite(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    RTMP_EnableWrite(rtmp);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    RTMP_EnableWrite(rtmp_context->rtmp);
 }
 
 JNIEXPORT jboolean JNICALL
 nativeIsConnected(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    int isConnected = RTMP_IsConnected(rtmp);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    int isConnected = RTMP_IsConnected(rtmp_context->rtmp);
     return isConnected != 0;
 }
 
 JNIEXPORT void JNICALL
 nativeSetTimeout(JNIEnv *env, jobject thiz, jint timeout) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    rtmp->Link.timeout = timeout;
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    rtmp_context->rtmp->Link.timeout = timeout;
 }
 
 JNIEXPORT jint JNICALL
 nativeGetTimeout(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    return rtmp->Link.timeout;
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    return rtmp_context->rtmp->Link.timeout;
 }
 
 JNIEXPORT jint JNICALL
 nativePause(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    return RTMP_Pause(rtmp, 1);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    return RTMP_Pause(rtmp_context->rtmp, 1);
 }
 
 JNIEXPORT jint JNICALL
 nativeResume(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    return RTMP_Pause(rtmp, 0);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    return RTMP_Pause(rtmp_context->rtmp, 0);
 }
 
 JNIEXPORT jint JNICALL
 nativeWrite(JNIEnv *env, jobject thiz, jbyteArray data,
             jint offset, jint size) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
     char *buf = (char *) env->GetByteArrayElements(data, nullptr);
 
-    int res = RTMP_Write(rtmp, &buf[offset], size);
+    int res = RTMP_Write(rtmp_context->rtmp, &buf[offset], size);
 
     env->ReleaseByteArrayElements(data, (jbyte *) buf, 0);
 
@@ -118,10 +124,10 @@ nativeWrite(JNIEnv *env, jobject thiz, jbyteArray data,
 JNIEXPORT jint JNICALL
 nativeWriteA(JNIEnv *env, jobject thiz, jobject buffer,
              jint offset, jint size) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
     char *buf = (char *) env->GetDirectBufferAddress(buffer);
 
-    int res = RTMP_Write(rtmp, &buf[offset], size);
+    int res = RTMP_Write(rtmp_context->rtmp, &buf[offset], size);
 
     return res;
 }
@@ -129,13 +135,13 @@ nativeWriteA(JNIEnv *env, jobject thiz, jobject buffer,
 JNIEXPORT jint JNICALL
 nativeRead(JNIEnv *env, jobject thiz, jbyteArray data, jint offset,
            jint size) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
     int dataLength = env->GetArrayLength(data);
     int res = -1;
 
     if (dataLength >= (offset + size)) {
         char *buf = reinterpret_cast<char *>(env->GetByteArrayElements(data, nullptr));
-        res = RTMP_Read(rtmp, &buf[offset], size);
+        res = RTMP_Read(rtmp_context->rtmp, &buf[offset], size);
         env->ReleaseByteArrayElements(data, reinterpret_cast<jbyte *>(buf), 0); // 0 - free buf
     }
 
@@ -144,10 +150,10 @@ nativeRead(JNIEnv *env, jobject thiz, jbyteArray data, jint offset,
 
 JNIEXPORT jint JNICALL
 nativeWritePacket(JNIEnv *env, jobject thiz, jobject rtmpPacket) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
     RTMPPacket *rtmp_packet = RtmpPacket::getNative(env, rtmpPacket);
 
-    int res = RTMP_SendPacket(rtmp, rtmp_packet, FALSE);
+    int res = RTMP_SendPacket(rtmp_context->rtmp, rtmp_packet, FALSE);
     if (res == FALSE) {
         LOGE("Can't write RTMP packet");
         return -1;
@@ -160,10 +166,10 @@ nativeWritePacket(JNIEnv *env, jobject thiz, jobject rtmpPacket) {
 
 JNIEXPORT jobject JNICALL
 nativeReadPacket(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
     RTMPPacket rtmp_packet = { 0 };
 
-    int res = RTMP_ReadPacket(rtmp, &rtmp_packet);
+    int res = RTMP_ReadPacket(rtmp_context->rtmp, &rtmp_packet);
     if (res == FALSE) {
         LOGE("Can't read RTMP packet");
         return nullptr;
@@ -174,16 +180,24 @@ nativeReadPacket(JNIEnv *env, jobject thiz) {
 
 JNIEXPORT void JNICALL
 nativeClose(JNIEnv *env, jobject thiz) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    RTMP_Close(rtmp);
-    RTMP_Free(rtmp);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+
+    if (rtmp_context->rtmp != nullptr) {
+        RTMP_Close(rtmp_context->rtmp);
+        RTMP_Free(rtmp_context->rtmp);
+        rtmp_context->rtmp = nullptr;
+    }
+    if (rtmp_context->url != nullptr) {
+        free(rtmp_context->url);
+        rtmp_context->url = nullptr;
+    }
 }
 
 JNIEXPORT jint JNICALL
 nativeServe(JNIEnv *env, jobject thiz, jint fd) {
-    RTMP *rtmp = RTMPWrapper::getNative(env, thiz);
-    rtmp->m_sb.sb_socket = fd;
-    int ret = RTMP_Serve(rtmp);
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    rtmp_context->rtmp->m_sb.sb_socket = fd;
+    int ret = RTMP_Serve(rtmp_context->rtmp);
     if (ret == FALSE) {
         return -1;
     } else {
