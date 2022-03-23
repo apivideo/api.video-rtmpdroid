@@ -17,7 +17,7 @@
 
 # Project description
 
-librtmp/rtmpdump wrapper for Android for RTMP connection and AMF messages.
+librtmp wrapper for Android for RTMP connection and AMF messages.
 
 # Getting started
 

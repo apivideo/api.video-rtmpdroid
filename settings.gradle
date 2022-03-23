@@ -12,6 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "rtmpdroid"
 include ':app'
 include ':lib'

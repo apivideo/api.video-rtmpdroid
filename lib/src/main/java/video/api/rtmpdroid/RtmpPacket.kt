@@ -1,11 +1,10 @@
 package video.api.rtmpdroid
 
-import java.io.Closeable
 import java.nio.ByteBuffer
 
 /**
  * RTMP packet.
- * Added for test purpose.
+ * Added for test purpose only.
  */
 class RtmpPacket(
     val channel: Int,
@@ -23,6 +22,11 @@ class RtmpPacket(
     ) : this(channel, headerType, packetType.value, timestamp, buffer)
 }
 
+/**
+ * RTMP Packet type
+ * @param value RTMP int equivalent
+ */
 enum class PacketType(val value: Int) {
+
     COMMAND(0x14)
 }

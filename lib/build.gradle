@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.dokka'
 }
 apply from: 'maven-push.gradle'
 
@@ -34,6 +35,28 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+}
+
+dokkaHtml {
+    moduleName.set("api.video ${rootProject.name} library")
+    suppressInheritedMembers.set(true)
+
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
+            skipDeprecated.set(true)
+            includeNonPublic.set(false)
+            skipEmptyPackages.set(true)
+        }
+    }
+    pluginsMapConfiguration.set(
+            ["org.jetbrains.dokka.base.DokkaBase": """{ 
+                "customAssets" : [
+                    "${file("$rootDir/docs/docs_logo.svg")}",
+                    "${file("$rootDir/docs/logo-icon.svg")}"
+                ] 
+        }"""]
+    )
 }
 
 dependencies {
