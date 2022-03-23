@@ -1,5 +1,5 @@
 # Changelog
 All changes to this project will be documented in this file.
 
-## [1.0.0] - 2022-02-17
-- First version
+## [1.0.0] - 2022-03-22
+- Initial version
