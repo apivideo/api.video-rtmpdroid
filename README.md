@@ -33,6 +33,34 @@ dependencies {
 }
 ```
 
+## Code sample
+
+### RTMP
+
+```kotlin
+    val rtmp = Rtmp()
+    rtmp.connect("rtmp://broadcast.api.video/s/YOUR_STREAM_KEY")
+    rtmp.connectStream()
+    
+    while(true) {
+        val flvBuffer = getNewFlvFrame() // flvBuffer is a direct ByteBuffer 
+        rtmp.write(flvBuffer)
+    }
+```
+
+### AMF
+
+```kotlin
+    val amfEncoder = AmfEncoder()
+
+    amfEncoder.add("myParam", 3.0)
+    val ecmaArray = EcmaArray()
+    ecmaArray.add("myOtherParam", "value")
+    amfEncoder.add(ecmaArray)
+
+    val amfBuffer = amfEncoder.encode()
+```
+
 ## Permissions
 
 ```xml
