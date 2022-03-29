@@ -70,7 +70,7 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
      */
     fun connect(url: String) {
         if (nativeSetupURL(url) != 0) {
-            throw ConnectException("Failed to parse URL: $url")
+            throw IllegalArgumentException("Invalid RTMP URL: $url")
         }
 
         if (enableWrite) {
