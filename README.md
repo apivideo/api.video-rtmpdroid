@@ -17,7 +17,20 @@
 
 # Project description
 
-librtmp wrapper for Android for RTMP connection and AMF messages.
+When it comes to Real-Time Messaging Protocol (RTMP), the most popular implementation is the C
+library: [librtmp](http://git.ffmpeg.org/rtmpdump). However, if you are streaming from Android and
+want to use librtmp, you need to go through the following painful steps:
+
+- compile librtmp for all Android architectures to generate multiple shared libraries
+- write a code that links the librtmp C functions to the Java classes/methods using Java Native
+  Interface (JNI)
+- write Java classes/methods
+
+rtmpdroid has been built to address this pain: you can directly use librtmp in your Android
+application like any other Java/Kotlin library.
+
+rtmpdroid also comes with a minimalist Action Message Format (AMF) encoder that is included in
+librtmp.
 
 # Getting started
 
