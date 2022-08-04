@@ -34,6 +34,7 @@ ExternalProject_Add(rtmp_project
             && ${GIT} am ${CMAKE_CURRENT_SOURCE_DIR}/patches/0002-Add-CMakeLists.txt.patch
             && ${GIT} am ${CMAKE_CURRENT_SOURCE_DIR}/patches/0003-Fix-AMF_EncodeString-size-check.patch
             && ${GIT} am ${CMAKE_CURRENT_SOURCE_DIR}/patches/0004-Modernize-socket-API-usage.patch
+            && ${GIT} am ${CMAKE_CURRENT_SOURCE_DIR}/patches/0005-Shutdown-socket-on-close-to-interrupt-socket-connect.patch
         CMAKE_ARGS
         -DENABLE_EXAMPLES=OFF
         -DOPENSSL_INCLUDE_DIR=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/include

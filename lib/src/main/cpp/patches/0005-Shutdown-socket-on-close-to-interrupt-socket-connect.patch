@@ -1,0 +1,26 @@
+From 54040b6508d8a4ff268cc6661c0e6ac8993763bf Mon Sep 17 00:00:00 2001
+From: ThibaultBee <thibault@api.video>
+Date: Thu, 4 Aug 2022 17:01:47 +0200
+Subject: [PATCH] Shutdown socket on close to interrupt socket connection
+
+---
+ librtmp/rtmp_sys.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/librtmp/rtmp_sys.h b/librtmp/rtmp_sys.h
+index 85d7e53..d9512c0 100644
+--- a/librtmp/rtmp_sys.h
++++ b/librtmp/rtmp_sys.h
+@@ -53,7 +53,8 @@
+ #define GetSockError()	errno
+ #define SetSockError(e)	errno = e
+ #undef closesocket
+-#define closesocket(s)	close(s)
++#define closesocket(s)	shutdown(s, SHUT_RDWR);\
++	close(s)
+ #define msleep(n)	usleep(n*1000)
+ #define SET_RCVTIMEO(tv,s)	struct timeval tv = {s,0}
+ #endif
+-- 
+2.34.1
+
