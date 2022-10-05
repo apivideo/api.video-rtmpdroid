@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string.h>
+#include <errno.h>
 
 #include "librtmp/rtmp.h"
 #include "librtmp/log.h"
@@ -16,10 +17,14 @@
 JNIEXPORT jlong JNICALL
 nativeAlloc(JNIEnv *env, jobject thiz) {
     RTMP *rtmp = RTMP_Alloc();
-    if (rtmp != nullptr) {
-        RTMP_Init(rtmp);
+    if (rtmp == nullptr) {
+        return 0;
     }
+    RTMP_Init(rtmp);
     rtmp_context *rtmp_context = static_cast<struct rtmp_context *>(malloc(sizeof(rtmp_context)));
+    if (rtmp_context == nullptr) {
+        return 0;
+    }
     rtmp_context->rtmp = rtmp;
     return reinterpret_cast<jlong>(rtmp_context);
 }
@@ -27,6 +32,9 @@ nativeAlloc(JNIEnv *env, jobject thiz) {
 JNIEXPORT jint JNICALL
 nativeSetupURL(JNIEnv *env, jobject thiz, jstring jurl) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
 
     char *jvmUrl = const_cast<char *>(env->GetStringUTFChars(jurl, nullptr));
     char *url = strdup(jvmUrl);
@@ -46,6 +54,10 @@ nativeSetupURL(JNIEnv *env, jobject thiz, jstring jurl) {
 JNIEXPORT jint JNICALL
 nativeConnect(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     int res = RTMP_Connect(rtmp_context->rtmp, nullptr);
     if (res == FALSE) {
         LOGE("Can't connect");
@@ -58,6 +70,10 @@ nativeConnect(JNIEnv *env, jobject thiz) {
 JNIEXPORT jint JNICALL
 nativeConnectStream(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     int res = RTMP_ConnectStream(rtmp_context->rtmp, 0);
     if (res == FALSE) {
         LOGE("Can't connect stream");
@@ -66,53 +82,87 @@ nativeConnectStream(JNIEnv *env, jobject thiz) {
     return 0;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT int JNICALL
 nativeDeleteStream(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     RTMP_DeleteStream(rtmp_context->rtmp);
+    return 0;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT int JNICALL
 nativeEnableWrite(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     RTMP_EnableWrite(rtmp_context->rtmp);
+    return 0;
 }
 
 JNIEXPORT jboolean JNICALL
 nativeIsConnected(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return false;
+    }
+
     int isConnected = RTMP_IsConnected(rtmp_context->rtmp);
     return isConnected != 0;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT int JNICALL
 nativeSetTimeout(JNIEnv *env, jobject thiz, jint timeout) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     rtmp_context->rtmp->Link.timeout = timeout;
+    return 0;
 }
 
 JNIEXPORT jint JNICALL
 nativeGetTimeout(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     return rtmp_context->rtmp->Link.timeout;
 }
 
 JNIEXPORT jint JNICALL
 nativePause(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     return RTMP_Pause(rtmp_context->rtmp, 1);
 }
 
 JNIEXPORT jint JNICALL
 nativeResume(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     return RTMP_Pause(rtmp_context->rtmp, 0);
 }
 
 JNIEXPORT jint JNICALL
-nativeWrite(JNIEnv *env, jobject thiz, jbyteArray data,
-            jint offset, jint size) {
+nativeWrite(JNIEnv *env, jobject thiz, jbyteArray data, jint offset, jint size) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     char *buf = (char *) env->GetByteArrayElements(data, nullptr);
 
     int res = RTMP_Write(rtmp_context->rtmp, &buf[offset], size);
@@ -123,9 +173,12 @@ nativeWrite(JNIEnv *env, jobject thiz, jbyteArray data,
 }
 
 JNIEXPORT jint JNICALL
-nativeWriteA(JNIEnv *env, jobject thiz, jobject buffer,
-             jint offset, jint size) {
+nativeWriteA(JNIEnv *env, jobject thiz, jobject buffer, jint offset, jint size) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     char *buf = (char *) env->GetDirectBufferAddress(buffer);
 
     int res = RTMP_Write(rtmp_context->rtmp, &buf[offset], size);
@@ -134,9 +187,12 @@ nativeWriteA(JNIEnv *env, jobject thiz, jobject buffer,
 }
 
 JNIEXPORT jint JNICALL
-nativeRead(JNIEnv *env, jobject thiz, jbyteArray data, jint offset,
-           jint size) {
+nativeRead(JNIEnv *env, jobject thiz, jbyteArray data, jint offset, jint size) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     int dataLength = env->GetArrayLength(data);
     int res = -1;
 
@@ -152,6 +208,10 @@ nativeRead(JNIEnv *env, jobject thiz, jbyteArray data, jint offset,
 JNIEXPORT jint JNICALL
 nativeWritePacket(JNIEnv *env, jobject thiz, jobject rtmpPacket) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     RTMPPacket *rtmp_packet = RtmpPacket::getNative(env, rtmpPacket);
 
     int res = RTMP_SendPacket(rtmp_context->rtmp, rtmp_packet, FALSE);
@@ -168,7 +228,11 @@ nativeWritePacket(JNIEnv *env, jobject thiz, jobject rtmpPacket) {
 JNIEXPORT jobject JNICALL
 nativeReadPacket(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
-    RTMPPacket rtmp_packet = { 0 };
+    if (rtmp_context == nullptr) {
+        return nullptr;
+    }
+
+    RTMPPacket rtmp_packet = {0};
 
     int res = RTMP_ReadPacket(rtmp_context->rtmp, &rtmp_packet);
     if (res == FALSE) {
@@ -183,16 +247,24 @@ JNIEXPORT void JNICALL
 nativeClose(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
 
-    if (rtmp_context->rtmp != nullptr) {
-        RTMP_Close(rtmp_context->rtmp);
-        RTMP_Free(rtmp_context->rtmp);
-        rtmp_context->rtmp = nullptr;
+    if (rtmp_context != nullptr) {
+        if (rtmp_context->rtmp != nullptr) {
+            RTMP_Close(rtmp_context->rtmp);
+            RTMP_Free(rtmp_context->rtmp);
+            rtmp_context->rtmp = nullptr;
+        }
+
+        free(rtmp_context);
     }
 }
 
 JNIEXPORT jint JNICALL
 nativeServe(JNIEnv *env, jobject thiz, jint fd) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
     rtmp_context->rtmp->m_sb.sb_socket = fd;
     int ret = RTMP_Serve(rtmp_context->rtmp);
     if (ret == FALSE) {
@@ -203,26 +275,24 @@ nativeServe(JNIEnv *env, jobject thiz, jint fd) {
 }
 
 
-static JNINativeMethod rtmpMethods[] = {
-        {"nativeAlloc",         "()J",                        (void *) &nativeAlloc},
-        {"nativeEnableWrite",   "()V",                        (void *) &nativeEnableWrite},
-        {"nativeIsConnected",   "()Z",                        (void *) &nativeIsConnected},
-        {"nativeSetTimeout",    "(I)V",                       (void *) &nativeSetTimeout},
-        {"nativeGetTimeout",    "()I",                        (void *) &nativeGetTimeout},
-        {"nativeSetupURL",      "(Ljava/lang/String;)I",      (void *) &nativeSetupURL},
-        {"nativeConnect",       "()I",                        (void *) &nativeConnect},
-        {"nativeConnectStream", "()I",                        (void *) &nativeConnectStream},
-        {"nativeDeleteStream",  "()V",                        (void *) &nativeDeleteStream},
-        {"nativePause",         "()I",                        (void *) &nativePause},
-        {"nativeResume",        "()I",                        (void *) &nativeResume},
-        {"nativeWrite",         "([BII)I",                    (void *) &nativeWrite},
-        {"nativeWrite",         "(Ljava/nio/ByteBuffer;II)I", (void *) &nativeWriteA},
-        {"nativeRead",          "([BII)I",                    (void *) &nativeRead},
-        {"nativeWritePacket",   "(L" RTMP_PACKET_CLASS";)I",  (void *) &nativeWritePacket},
-        {"nativeReadPacket",    "()L" RTMP_PACKET_CLASS";",   (void *) &nativeReadPacket},
-        {"nativeClose",         "()V",                        (void *) &nativeClose},
-        {"nativeServe",         "(I)I",                       (void *) &nativeServe}
-};
+static JNINativeMethod rtmpMethods[] = {{"nativeAlloc",         "()J",                        (void *) &nativeAlloc},
+                                        {"nativeEnableWrite",   "()I",                        (void *) &nativeEnableWrite},
+                                        {"nativeIsConnected",   "()Z",                        (void *) &nativeIsConnected},
+                                        {"nativeSetTimeout",    "(I)I",                       (void *) &nativeSetTimeout},
+                                        {"nativeGetTimeout",    "()I",                        (void *) &nativeGetTimeout},
+                                        {"nativeSetupURL",      "(Ljava/lang/String;)I",      (void *) &nativeSetupURL},
+                                        {"nativeConnect",       "()I",                        (void *) &nativeConnect},
+                                        {"nativeConnectStream", "()I",                        (void *) &nativeConnectStream},
+                                        {"nativeDeleteStream",  "()I",                        (void *) &nativeDeleteStream},
+                                        {"nativePause",         "()I",                        (void *) &nativePause},
+                                        {"nativeResume",        "()I",                        (void *) &nativeResume},
+                                        {"nativeWrite",         "([BII)I",                    (void *) &nativeWrite},
+                                        {"nativeWrite",         "(Ljava/nio/ByteBuffer;II)I", (void *) &nativeWriteA},
+                                        {"nativeRead",          "([BII)I",                    (void *) &nativeRead},
+                                        {"nativeWritePacket",   "(L" RTMP_PACKET_CLASS";)I",  (void *) &nativeWritePacket},
+                                        {"nativeReadPacket",    "()L" RTMP_PACKET_CLASS";",   (void *) &nativeReadPacket},
+                                        {"nativeClose",         "()V",                        (void *) &nativeClose},
+                                        {"nativeServe",         "(I)I",                       (void *) &nativeServe}};
 
 JNIEXPORT jint JNICALL
 nativeEncodeBoolean(JNIEnv *env, jclass cls, jobject buffer, jint offset, jint end,
@@ -288,14 +358,12 @@ nativeEncodeString(JNIEnv *env, jclass cls, jobject buffer, jint offset, jint en
 
 JNIEXPORT jint JNICALL
 nativeEncodeNamedBoolean(JNIEnv *env, jclass cls, jobject buffer, jint offset, jint end,
-                         jstring jname,
-                         jboolean parameter) {
+                         jstring jname, jboolean parameter) {
     char *buf = (char *) env->GetDirectBufferAddress(buffer);
     char *name = const_cast<char *>(env->GetStringUTFChars(jname, nullptr));
     AVal av_name = {0, 0};
     STR2AVAL(av_name, name);
-    char *newBuf = AMF_EncodeNamedBoolean(&buf[offset], buf + end, &av_name,
-                                          parameter);
+    char *newBuf = AMF_EncodeNamedBoolean(&buf[offset], buf + end, &av_name, parameter);
     env->ReleaseStringUTFChars(jname, name);
     if (nullptr == newBuf) {
         return -1;
@@ -306,14 +374,12 @@ nativeEncodeNamedBoolean(JNIEnv *env, jclass cls, jobject buffer, jint offset, j
 
 JNIEXPORT jint JNICALL
 nativeEncodeNamedNumber(JNIEnv *env, jclass cls, jobject buffer, jint offset, jint end,
-                        jstring jname,
-                        jdouble parameter) {
+                        jstring jname, jdouble parameter) {
     char *buf = (char *) env->GetDirectBufferAddress(buffer);
     char *name = const_cast<char *>(env->GetStringUTFChars(jname, nullptr));
     AVal av_name = {0, 0};
     STR2AVAL(av_name, name);
-    char *newBuf = AMF_EncodeNamedNumber(&buf[offset], buf + end, &av_name,
-                                         parameter);
+    char *newBuf = AMF_EncodeNamedNumber(&buf[offset], buf + end, &av_name, parameter);
     env->ReleaseStringUTFChars(jname, name);
     if (nullptr == newBuf) {
         return -1;
@@ -324,8 +390,7 @@ nativeEncodeNamedNumber(JNIEnv *env, jclass cls, jobject buffer, jint offset, ji
 
 JNIEXPORT jint JNICALL
 nativeEncodeNamedString(JNIEnv *env, jclass cls, jobject buffer, jint offset, jint end,
-                        jstring jname,
-                        jstring jparameter) {
+                        jstring jname, jstring jparameter) {
     char *buf = (char *) env->GetDirectBufferAddress(buffer);
     char *parameter = const_cast<char *>(env->GetStringUTFChars(jparameter, nullptr));
     AVal av_param = {0, 0};
@@ -334,8 +399,7 @@ nativeEncodeNamedString(JNIEnv *env, jclass cls, jobject buffer, jint offset, ji
     AVal av_name = {0, 0};
     STR2AVAL(av_name, name);
 
-    char *newBuf = AMF_EncodeNamedString(&buf[offset], buf + end, &av_name,
-                                         &av_param);
+    char *newBuf = AMF_EncodeNamedString(&buf[offset], buf + end, &av_name, &av_param);
     env->ReleaseStringUTFChars(jname, name);
     env->ReleaseStringUTFChars(jparameter, parameter);
     if (nullptr == newBuf) {
@@ -345,21 +409,19 @@ nativeEncodeNamedString(JNIEnv *env, jclass cls, jobject buffer, jint offset, ji
     }
 }
 
-static JNINativeMethod amfEncoderMethods[] = {
-        {"nativeEncodeBoolean",      "(Ljava/nio/ByteBuffer;IIZ)I",                                    (void *) &nativeEncodeBoolean},
-        {"nativeEncodeInt",          "(Ljava/nio/ByteBuffer;III)I",                                    (void *) &nativeEncodeInt},
-        {"nativeEncodeInt24",        "(Ljava/nio/ByteBuffer;III)I",                                    (void *) &nativeEncodeInt24},
-        {"nativeEncodeNumber",       "(Ljava/nio/ByteBuffer;IID)I",                                    (void *) &nativeEncodeNumber},
-        {"nativeEncodeString",       "(Ljava/nio/ByteBuffer;IILjava/lang/String;)I",                   (void *) &nativeEncodeString},
-        {"nativeEncodeNamedBoolean", "(Ljava/nio/ByteBuffer;IILjava/lang/String;Z)I",                  (void *) &nativeEncodeNamedBoolean},
-        {"nativeEncodeNamedNumber",  "(Ljava/nio/ByteBuffer;IILjava/lang/String;D)I",                  (void *) &nativeEncodeNamedNumber},
-        {"nativeEncodeNamedString",  "(Ljava/nio/ByteBuffer;IILjava/lang/String;Ljava/lang/String;)I", (void *) &nativeEncodeNamedString}
-};
+static JNINativeMethod amfEncoderMethods[] = {{"nativeEncodeBoolean",      "(Ljava/nio/ByteBuffer;IIZ)I",                                    (void *) &nativeEncodeBoolean},
+                                              {"nativeEncodeInt",          "(Ljava/nio/ByteBuffer;III)I",                                    (void *) &nativeEncodeInt},
+                                              {"nativeEncodeInt24",        "(Ljava/nio/ByteBuffer;III)I",                                    (void *) &nativeEncodeInt24},
+                                              {"nativeEncodeNumber",       "(Ljava/nio/ByteBuffer;IID)I",                                    (void *) &nativeEncodeNumber},
+                                              {"nativeEncodeString",       "(Ljava/nio/ByteBuffer;IILjava/lang/String;)I",                   (void *) &nativeEncodeString},
+                                              {"nativeEncodeNamedBoolean", "(Ljava/nio/ByteBuffer;IILjava/lang/String;Z)I",                  (void *) &nativeEncodeNamedBoolean},
+                                              {"nativeEncodeNamedNumber",  "(Ljava/nio/ByteBuffer;IILjava/lang/String;D)I",                  (void *) &nativeEncodeNamedNumber},
+                                              {"nativeEncodeNamedString",  "(Ljava/nio/ByteBuffer;IILjava/lang/String;Ljava/lang/String;)I", (void *) &nativeEncodeNamedString}};
 
 // Register natives API
 
-static int registerNativeForClassName(JNIEnv *env, const char *className,
-                                      JNINativeMethod *methods, int methodsSize) {
+static int registerNativeForClassName(JNIEnv *env, const char *className, JNINativeMethod *methods,
+                                      int methodsSize) {
     jclass clazz = env->FindClass(className);
     if (clazz == nullptr) {
         LOGE("Unable to find class '%s'", className);

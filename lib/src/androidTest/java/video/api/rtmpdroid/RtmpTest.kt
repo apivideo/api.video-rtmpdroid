@@ -1,8 +1,7 @@
 package video.api.rtmpdroid
 
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import org.junit.Assert.*
 import org.junit.Test
 import java.net.SocketException
 import java.net.SocketTimeoutException
@@ -35,7 +34,7 @@ class RtmpTest {
     fun connectTest() {
         try {
             rtmp.connect("rtmp://0.0.0.0:1935/hhs/abcde live=1")
-        } catch (e: SocketException) {
+        } catch (_: SocketException) {
         }
     }
 
@@ -43,7 +42,7 @@ class RtmpTest {
     fun connectStreamTest() {
         try {
             rtmp.connectStream()
-        } catch (e: SocketException) {
+        } catch (_: SocketException) {
         }
     }
 
@@ -51,7 +50,7 @@ class RtmpTest {
     fun deleteStreamTest() {
         try {
             rtmp.deleteStream()
-        } catch (e: SocketException) {
+        } catch (_: SocketException) {
         }
     }
 
@@ -60,7 +59,7 @@ class RtmpTest {
         val data = ByteArray(10)
         try {
             rtmp.read(data)
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
         }
     }
 
@@ -69,7 +68,7 @@ class RtmpTest {
         val buffer = ByteBuffer.allocateDirect(10)
         try {
             rtmp.write(buffer)
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
         }
     }
 
@@ -78,7 +77,7 @@ class RtmpTest {
         val data = byteArrayOf(10, 20)
         try {
             rtmp.write(data)
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
         }
     }
 
@@ -86,7 +85,7 @@ class RtmpTest {
     fun pauseTest() {
         try {
             rtmp.pause()
-        } catch (e: SocketException) {
+        } catch (_: SocketException) {
         }
     }
 
@@ -94,7 +93,26 @@ class RtmpTest {
     fun resumeTest() {
         try {
             rtmp.resume()
-        } catch (e: SocketException) {
+        } catch (_: SocketException) {
+        }
+    }
+
+    @Test
+    fun closeTest() {
+        try {
+            rtmp.close()
+        } catch (_: SocketException) {
+            fail("close must not throw an exception")
+        }
+    }
+
+    @Test
+    fun deleteStreamAfterClose() {
+        try {
+            rtmp.close()
+            rtmp.deleteStream()
+            fail("deleteStream must throw an exception if close has been called")
+        } catch (_: Exception) {
         }
     }
 }

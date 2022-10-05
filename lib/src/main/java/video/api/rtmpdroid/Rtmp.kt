@@ -18,7 +18,7 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
         }
     }
 
-    private val ptr: Long
+    private var ptr: Long
 
     init {
         ptr = nativeAlloc()
@@ -39,25 +39,35 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
         get() = nativeIsConnected()
 
     private external fun nativeGetTimeout(): Int
-    private external fun nativeSetTimeout(timeoutInMs: Int)
+    private external fun nativeSetTimeout(timeoutInMs: Int): Int
 
     /**
      * Set/get connection timeout in ms
      */
-    var timeout
+    var timeout: Int
         /**
          * @return connection timeout is ms
          */
-        get() = nativeGetTimeout()
+        get() {
+            val timeout = nativeGetTimeout()
+            if (timeout < 0) {
+                throw UnsupportedOperationException("Can't get timeout")
+            }
+            return timeout
+        }
         /**
          * @param value connection timeout is ms
          */
-        set(value) = nativeSetTimeout(value)
+        set(value) {
+            if (nativeSetTimeout(value) != 0) {
+                throw UnsupportedOperationException("Can't set timeout")
+            }
+        }
 
     private external fun nativeAlloc(): Long
 
     private external fun nativeSetupURL(url: String): Int
-    private external fun nativeEnableWrite()
+    private external fun nativeEnableWrite(): Int
     private external fun nativeConnect(): Int
 
     /**
@@ -74,7 +84,9 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
         }
 
         if (enableWrite) {
-            nativeEnableWrite()
+            if (nativeEnableWrite() != 0) {
+                throw UnsupportedOperationException("Failed to enable write")
+            }
         }
 
         if (nativeConnect() != 0) {
@@ -95,7 +107,7 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
         }
     }
 
-    private external fun nativeDeleteStream()
+    private external fun nativeDeleteStream(): Int
 
     /**
      * Deletes a running stream.
@@ -103,7 +115,9 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
      * @see [connectStream]
      */
     fun deleteStream() {
-        nativeDeleteStream()
+        if (nativeDeleteStream() != 0) {
+            throw UnsupportedOperationException("Failed to delete stream")
+        }
     }
 
     private external fun nativeWrite(buffer: ByteBuffer, offset: Int, size: Int): Int
@@ -132,9 +146,7 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
     }
 
     private external fun nativeWrite(
-        data: ByteArray,
-        offset: Int,
-        size: Int
+        data: ByteArray, offset: Int, size: Int
     ): Int
 
     /**
@@ -240,7 +252,10 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
      * Closes the RTMP connection.
      */
     override fun close() {
-        nativeClose()
+        if (ptr != 0L) {
+            nativeClose()
+            ptr = 0L
+        }
     }
 
     private external fun nativeServe(fd: Int): Int
