@@ -187,10 +187,17 @@ nativeClose(JNIEnv *env, jobject thiz) {
         RTMP_Free(rtmp_context->rtmp);
         rtmp_context->rtmp = nullptr;
     }
+    /**
+     * TODO: free url.
+     * Freeing url seems to crash the framework (because of double free?)
+     * Temporary workaround is to comment this part.
+     */
+    /*
     if (rtmp_context->url != nullptr) {
         free(rtmp_context->url);
         rtmp_context->url = nullptr;
     }
+    */
 }
 
 JNIEXPORT jint JNICALL
