@@ -21,7 +21,6 @@ nativeAlloc(JNIEnv *env, jobject thiz) {
     }
     rtmp_context *rtmp_context = static_cast<struct rtmp_context *>(malloc(sizeof(rtmp_context)));
     rtmp_context->rtmp = rtmp;
-    rtmp_context->url = nullptr;
     return reinterpret_cast<jlong>(rtmp_context);
 }
 
@@ -29,13 +28,15 @@ JNIEXPORT jint JNICALL
 nativeSetupURL(JNIEnv *env, jobject thiz, jstring jurl) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
 
-    char *url = const_cast<char *>(env->GetStringUTFChars(jurl, nullptr));
-    rtmp_context->url = strdup(url);
-    env->ReleaseStringUTFChars(jurl, url);
+    char *jvmUrl = const_cast<char *>(env->GetStringUTFChars(jurl, nullptr));
+    char *url = strdup(jvmUrl);
+    STR2AVAL(rtmp_context->rtmp->Link.tcUrl, url);
+    rtmp_context->rtmp->Link.lFlags |= RTMP_LF_FTCU; // let librtmp free tcUrl on close
+    env->ReleaseStringUTFChars(jurl, jvmUrl);
 
-    int res = RTMP_SetupURL(rtmp_context->rtmp, rtmp_context->url);
+    int res = RTMP_SetupURL(rtmp_context->rtmp, url);
     if (res == FALSE) {
-        LOGE("Can't parse url'%s'", url);
+        LOGE("Can't parse url'%s'", jvmUrl);
         return -1;
     }
 
@@ -187,17 +188,6 @@ nativeClose(JNIEnv *env, jobject thiz) {
         RTMP_Free(rtmp_context->rtmp);
         rtmp_context->rtmp = nullptr;
     }
-    /**
-     * TODO: free url.
-     * Freeing url seems to crash the framework (because of double free?)
-     * Temporary workaround is to comment this part.
-     */
-    /*
-    if (rtmp_context->url != nullptr) {
-        free(rtmp_context->url);
-        rtmp_context->url = nullptr;
-    }
-    */
 }
 
 JNIEXPORT jint JNICALL
