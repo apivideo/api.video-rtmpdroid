@@ -48,6 +48,10 @@ nativeSetupURL(JNIEnv *env, jobject thiz, jstring jurl) {
         return -1;
     }
 
+    // Now that Link.app is set, we can compute tcUrl length
+    rtmp_context->rtmp->Link.tcUrl.av_len =
+            rtmp_context->rtmp->Link.app.av_len + (rtmp_context->rtmp->Link.app.av_val - url);
+
     return 0;
 }
 
