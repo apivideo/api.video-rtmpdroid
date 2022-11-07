@@ -2,6 +2,11 @@
 
 All changes to this project will be documented in this file.
 
+## [1.0.5] - 2022-11-07
+
+- Upgrade openssl to 3.0.7
+- Fix tcUrl length
+
 ## [1.0.4] - 2022-10-06
 
 - Fix a crash when freeing url in `nativeClose`.
