@@ -1,5 +1,7 @@
 package video.api.rtmpdroid
 
+import video.api.rtmpdroid.internal.ExVideoCodecs
+import video.api.rtmpdroid.internal.VideoCodecs
 import java.io.Closeable
 import java.net.ConnectException
 import java.net.SocketException
@@ -61,6 +63,55 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
         set(value) {
             if (nativeSetTimeout(value) != 0) {
                 throw UnsupportedOperationException("Can't set timeout")
+            }
+        }
+
+    private external fun nativeGetExVideoCodecs(): String?
+    private external fun nativeSetExVideoCodec(exVideoCodec: String?): Int
+
+    private external fun nativeGetVideoCodecs(): Int
+    private external fun nativeSetVideoCodec(videoCodec: Int): Int
+
+    /**
+     * Set/get supported video codecs.
+     * It is a list of video mime types.
+     *
+     * The supported video codecs will be send in the RTMP `connect` command either in the
+     * `videoCodecs` for standard codecs or in the `fourCCList` for enhanced codecs.
+     */
+    var supportedVideoCodecs: List<String>
+        get() {
+            val videoCodecs = nativeGetVideoCodecs()
+            if (videoCodecs <= 0) {
+                throw UnsupportedOperationException("Can't get supported video codecs")
+            }
+            val supportedCodecs = VideoCodecs(videoCodecs)
+            val supportedExCodecs = ExVideoCodecs(nativeGetExVideoCodecs())
+            return supportedCodecs.supportedCodecs + supportedExCodecs.supportedCodecs
+        }
+        set(value) {
+            if (value.isEmpty()) {
+                throw IllegalArgumentException("At least one codec must be supported")
+            }
+
+            val supportedCodecs = mutableListOf<String>()
+            val supportedExCodecs = mutableListOf<String>()
+            value.forEach {
+                if (VideoCodecs.isSupportedCodec(it)) {
+                    supportedCodecs.add(it)
+                } else if (ExVideoCodecs.isSupportedCodec(it)) {
+                    supportedExCodecs.add(it)
+                } else {
+                    throw IllegalArgumentException("Unsupported codec $it")
+                }
+            }
+
+            if (nativeSetVideoCodec(VideoCodecs.fromMimeTypes(supportedCodecs).value) != 0) {
+                throw UnsupportedOperationException("Can't set supported video codecs")
+            }
+
+            if (nativeSetExVideoCodec(ExVideoCodecs.fromMimeTypes(supportedExCodecs).value) != 0) {
+                throw UnsupportedOperationException("Can't set supported extended video codecs")
             }
         }
 
@@ -138,9 +189,11 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
             byteSent < 0 -> {
                 throw SocketException("Connection error")
             }
+
             byteSent == 0 -> {
                 throw SocketTimeoutException("Timeout exception")
             }
+
             else -> return byteSent
         }
     }
@@ -161,9 +214,11 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
             byteSent < 0 -> {
                 throw SocketException("Connection error")
             }
+
             byteSent == 0 -> {
                 throw SocketTimeoutException("Timeout exception")
             }
+
             else -> return byteSent
         }
     }
@@ -182,9 +237,11 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
             byteReceived < 0 -> {
                 throw SocketException("Connection error")
             }
+
             byteReceived == 0 -> {
                 throw SocketTimeoutException("Timeout exception")
             }
+
             else -> return byteReceived
         }
     }

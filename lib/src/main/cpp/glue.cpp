@@ -140,6 +140,60 @@ nativeGetTimeout(JNIEnv *env, jobject thiz) {
     return rtmp_context->rtmp->Link.timeout;
 }
 
+JNIEXPORT int JNICALL
+nativeSetVideoCodec(JNIEnv *env, jobject thiz, jint videoCodecs) {
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
+    rtmp_context->rtmp->m_fVideoCodecs = videoCodecs;
+    return 0;
+}
+
+JNIEXPORT jint JNICALL
+nativeGetVideoCodecs(JNIEnv *env, jobject thiz) {
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
+    return rtmp_context->rtmp->m_fVideoCodecs;
+}
+
+
+JNIEXPORT int JNICALL
+nativeSetExVideoCodec(JNIEnv *env, jobject thiz, jstring exVideoCodecs) {
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return -EFAULT;
+    }
+
+    if (exVideoCodecs == nullptr) {
+        rtmp_context->rtmp->m_exVideoCodecs = nullptr;
+    } else {
+        char *ex_video_codecs = const_cast<char *>(env->GetStringUTFChars(exVideoCodecs, nullptr));
+        rtmp_context->rtmp->m_exVideoCodecs = strdup(ex_video_codecs);
+        env->ReleaseStringUTFChars(exVideoCodecs, ex_video_codecs);
+    }
+
+    return 0;
+}
+
+JNIEXPORT jstring JNICALL
+nativeGetExVideoCodecs(JNIEnv *env, jobject thiz) {
+    rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
+    if (rtmp_context == nullptr) {
+        return nullptr;
+    }
+
+    if (rtmp_context->rtmp->m_exVideoCodecs == nullptr) {
+        return nullptr;
+    } else {
+        return env->NewStringUTF(rtmp_context->rtmp->m_exVideoCodecs);
+    }
+}
+
 JNIEXPORT jint JNICALL
 nativePause(JNIEnv *env, jobject thiz) {
     rtmp_context *rtmp_context = RtmpWrapper::getNative(env, thiz);
@@ -279,24 +333,28 @@ nativeServe(JNIEnv *env, jobject thiz, jint fd) {
 }
 
 
-static JNINativeMethod rtmpMethods[] = {{"nativeAlloc",         "()J",                        (void *) &nativeAlloc},
-                                        {"nativeEnableWrite",   "()I",                        (void *) &nativeEnableWrite},
-                                        {"nativeIsConnected",   "()Z",                        (void *) &nativeIsConnected},
-                                        {"nativeSetTimeout",    "(I)I",                       (void *) &nativeSetTimeout},
-                                        {"nativeGetTimeout",    "()I",                        (void *) &nativeGetTimeout},
-                                        {"nativeSetupURL",      "(Ljava/lang/String;)I",      (void *) &nativeSetupURL},
-                                        {"nativeConnect",       "()I",                        (void *) &nativeConnect},
-                                        {"nativeConnectStream", "()I",                        (void *) &nativeConnectStream},
-                                        {"nativeDeleteStream",  "()I",                        (void *) &nativeDeleteStream},
-                                        {"nativePause",         "()I",                        (void *) &nativePause},
-                                        {"nativeResume",        "()I",                        (void *) &nativeResume},
-                                        {"nativeWrite",         "([BII)I",                    (void *) &nativeWrite},
-                                        {"nativeWrite",         "(Ljava/nio/ByteBuffer;II)I", (void *) &nativeWriteA},
-                                        {"nativeRead",          "([BII)I",                    (void *) &nativeRead},
-                                        {"nativeWritePacket",   "(L" RTMP_PACKET_CLASS";)I",  (void *) &nativeWritePacket},
-                                        {"nativeReadPacket",    "()L" RTMP_PACKET_CLASS";",   (void *) &nativeReadPacket},
-                                        {"nativeClose",         "()V",                        (void *) &nativeClose},
-                                        {"nativeServe",         "(I)I",                       (void *) &nativeServe}};
+static JNINativeMethod rtmpMethods[] = {{"nativeAlloc",            "()J",                        (void *) &nativeAlloc},
+                                        {"nativeEnableWrite",      "()I",                        (void *) &nativeEnableWrite},
+                                        {"nativeIsConnected",      "()Z",                        (void *) &nativeIsConnected},
+                                        {"nativeSetTimeout",       "(I)I",                       (void *) &nativeSetTimeout},
+                                        {"nativeGetTimeout",       "()I",                        (void *) &nativeGetTimeout},
+                                        {"nativeSetVideoCodec",    "(I)I",                       (void *) &nativeSetVideoCodec},
+                                        {"nativeGetVideoCodecs",   "()I",                        (void *) &nativeGetVideoCodecs},
+                                        {"nativeSetExVideoCodec",  "(Ljava/lang/String;)I",      (void *) &nativeSetExVideoCodec},
+                                        {"nativeGetExVideoCodecs", "()Ljava/lang/String;",       (void *) &nativeGetExVideoCodecs},
+                                        {"nativeSetupURL",         "(Ljava/lang/String;)I",      (void *) &nativeSetupURL},
+                                        {"nativeConnect",          "()I",                        (void *) &nativeConnect},
+                                        {"nativeConnectStream",    "()I",                        (void *) &nativeConnectStream},
+                                        {"nativeDeleteStream",     "()I",                        (void *) &nativeDeleteStream},
+                                        {"nativePause",            "()I",                        (void *) &nativePause},
+                                        {"nativeResume",           "()I",                        (void *) &nativeResume},
+                                        {"nativeWrite",            "([BII)I",                    (void *) &nativeWrite},
+                                        {"nativeWrite",            "(Ljava/nio/ByteBuffer;II)I", (void *) &nativeWriteA},
+                                        {"nativeRead",             "([BII)I",                    (void *) &nativeRead},
+                                        {"nativeWritePacket",      "(L" RTMP_PACKET_CLASS";)I",  (void *) &nativeWritePacket},
+                                        {"nativeReadPacket",       "()L" RTMP_PACKET_CLASS";",   (void *) &nativeReadPacket},
+                                        {"nativeClose",            "()V",                        (void *) &nativeClose},
+                                        {"nativeServe",            "(I)I",                       (void *) &nativeServe}};
 
 JNIEXPORT jint JNICALL
 nativeEncodeBoolean(JNIEnv *env, jclass cls, jobject buffer, jint offset, jint end,

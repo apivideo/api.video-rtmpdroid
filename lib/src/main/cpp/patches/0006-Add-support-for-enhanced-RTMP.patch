@@ -1,0 +1,154 @@
+From 7c9c09619697ca548829e85c99c8447fc628f298 Mon Sep 17 00:00:00 2001
+From: ThibaultBee <37510686+ThibaultBee@users.noreply.github.com>
+Date: Mon, 16 Oct 2023 21:57:55 +0200
+Subject: [PATCH] Add support for enhanced RTMP
+
+---
+ librtmp/amf.c  | 13 +++++++++++++
+ librtmp/amf.h  |  1 +
+ librtmp/rtmp.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ librtmp/rtmp.h |  1 +
+ rtmpsrv.c      |  1 +
+ 5 files changed, 62 insertions(+)
+
+diff --git a/librtmp/amf.c b/librtmp/amf.c
+index 2644624..1f6b267 100644
+--- a/librtmp/amf.c
++++ b/librtmp/amf.c
+@@ -308,6 +308,19 @@ AMF_EncodeNamedBoolean(char *output, char *outend, const AVal *strName, int bVal
+   return AMF_EncodeBoolean(output, outend, bVal);
+ }
+ 
++char *
++AMF_EncodeNamedArray(char *output, char *outend, const AVal *strName, AMFObject *obj)
++{
++  if (output+2+strName->av_len > outend)
++    return NULL;
++  output = AMF_EncodeInt16(output, outend, strName->av_len);
++
++  memcpy(output, strName->av_val, strName->av_len);
++  output += strName->av_len;
++
++  return AMF_EncodeArray(obj, output, outend);
++}
++
+ void
+ AMFProp_GetName(AMFObjectProperty *prop, AVal *name)
+ {
+diff --git a/librtmp/amf.h b/librtmp/amf.h
+index 5de414b..627fd74 100644
+--- a/librtmp/amf.h
++++ b/librtmp/amf.h
+@@ -94,6 +94,7 @@ extern "C"
+   char *AMF_EncodeNamedString(char *output, char *outend, const AVal * name, const AVal * value);
+   char *AMF_EncodeNamedNumber(char *output, char *outend, const AVal * name, double dVal);
+   char *AMF_EncodeNamedBoolean(char *output, char *outend, const AVal * name, int bVal);
++  char *AMF_EncodeNamedArray(char *output, char *outend, const AVal *strName, AMFObject *obj);
+ 
+   unsigned short AMF_DecodeInt16(const char *data);
+   unsigned int AMF_DecodeInt24(const char *data);
+diff --git a/librtmp/rtmp.c b/librtmp/rtmp.c
+index a8f6ac1..20a27eb 100644
+--- a/librtmp/rtmp.c
++++ b/librtmp/rtmp.c
+@@ -1581,6 +1581,7 @@ SAVC(fpad);
+ SAVC(capabilities);
+ SAVC(audioCodecs);
+ SAVC(videoCodecs);
++SAVC(fourCcList);
+ SAVC(videoFunction);
+ SAVC(objectEncoding);
+ SAVC(secureToken);
+@@ -1588,6 +1589,38 @@ SAVC(secureTokenResponse);
+ SAVC(type);
+ SAVC(nonprivate);
+ 
++
++static char *EncodeFourCCList(char *enc, char *pend, char *exVideoCodecs)
++{
++  char *fourCC = exVideoCodecs;
++  int fourCCLen = strlen(exVideoCodecs);
++  AMFObjectProperty p = {{0,0}};
++  AMFObject obj;
++  obj.o_num = 0;
++  obj.o_props = NULL;
++
++  if (!exVideoCodecs) {
++    // No need to encode anything
++    return enc;
++  }
++
++  while(fourCC - exVideoCodecs < fourCCLen) {
++    p.p_type = AMF_STRING;
++    p.p_vu.p_aval.av_val = fourCC;
++    p.p_vu.p_aval.av_len = 4;
++
++    AMF_AddProp(&obj, &p);
++
++    fourCC += 5;
++  }
++
++  enc = AMF_EncodeNamedArray(enc, pend, &av_fourCcList, &obj);
++  AMF_Reset(&obj);
++
++  return enc;
++}
++
++
+ static int
+ SendConnectPacket(RTMP *r, RTMPPacket *cp)
+ {
+@@ -1668,6 +1701,14 @@ SendConnectPacket(RTMP *r, RTMPPacket *cp)
+       if (!enc)
+ 	return FALSE;
+     }
++   // Add enhanced video codecs
++  if (r->m_exVideoCodecs)
++    {
++      enc = EncodeFourCCList(enc, pend, r->m_exVideoCodecs);
++      if (!enc)
++  return FALSE;
++    }
++
+   if (enc + 3 >= pend)
+     return FALSE;
+   *enc++ = 0;
+@@ -4259,6 +4300,11 @@ CloseInternal(RTMP *r, int reconnect)
+       r->Link.rc4keyOut = NULL;
+     }
+ #endif
++  if (r->m_exVideoCodecs)
++    {
++      free(r->m_exVideoCodecs);
++      r->m_exVideoCodecs = NULL;
++    }
+ }
+ 
+ int
+diff --git a/librtmp/rtmp.h b/librtmp/rtmp.h
+index e7c6cf2..424dc48 100644
+--- a/librtmp/rtmp.h
++++ b/librtmp/rtmp.h
+@@ -266,6 +266,7 @@ extern "C"
+ 
+     double m_fAudioCodecs;	/* audioCodecs for the connect packet */
+     double m_fVideoCodecs;	/* videoCodecs for the connect packet */
++    char *m_exVideoCodecs;  /* fourCcList for the connect packet for enhanced RTMP. Expect a string with format: `hvc1[,av01][,vp09][,...]\n` */
+     double m_fEncoding;		/* AMF0 or AMF3 */
+ 
+     double m_fDuration;		/* duration of stream in seconds */
+diff --git a/rtmpsrv.c b/rtmpsrv.c
+index 5df4d3a..721fe19 100644
+--- a/rtmpsrv.c
++++ b/rtmpsrv.c
+@@ -156,6 +156,7 @@ SAVC(fpad);
+ SAVC(capabilities);
+ SAVC(audioCodecs);
+ SAVC(videoCodecs);
++SAVC(fourCcList);
+ SAVC(videoFunction);
+ SAVC(objectEncoding);
+ SAVC(_result);
+-- 
+2.39.1
+

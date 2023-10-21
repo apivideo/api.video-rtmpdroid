@@ -1,5 +1,6 @@
 package video.api.rtmpdroid
 
+import android.media.MediaFormat
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
@@ -28,6 +29,19 @@ class RtmpTest {
         val timeout = 1234
         rtmp.timeout = timeout
         assertEquals(timeout, rtmp.timeout)
+    }
+
+    @Test
+    fun supportedVideoCodecsTest() {
+        rtmp.supportedVideoCodecs = listOf(MediaFormat.MIMETYPE_VIDEO_AVC)
+        assertTrue(rtmp.supportedVideoCodecs.size == 1)
+        assertTrue(rtmp.supportedVideoCodecs.contains(MediaFormat.MIMETYPE_VIDEO_AVC))
+
+        rtmp.supportedVideoCodecs =
+            listOf(MediaFormat.MIMETYPE_VIDEO_AVC, MediaFormat.MIMETYPE_VIDEO_HEVC, MediaFormat.MIMETYPE_VIDEO_AV1)
+        assertTrue(rtmp.supportedVideoCodecs.size == 3)
+        assertTrue(rtmp.supportedVideoCodecs.contains(MediaFormat.MIMETYPE_VIDEO_AVC))
+        assertTrue(rtmp.supportedVideoCodecs.contains(MediaFormat.MIMETYPE_VIDEO_HEVC))
     }
 
     @Test
