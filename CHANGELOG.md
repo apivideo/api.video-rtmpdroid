@@ -2,6 +2,11 @@
 
 All changes to this project will be documented in this file.
 
+## [1.1.0] - 2023-10-23
+
+- Add API to support enhanced RTMP features
+- Upgrade dependencies (Kotlin,...) (incl. openssl to 3.0.9)
+
 ## [1.0.5] - 2022-11-07
 
 - Upgrade openssl to 3.0.7

@@ -42,7 +42,7 @@ In build.gradle, add the following code:
 
 ```groovy
 dependencies {
-    implementation 'video.api:rtmpdroid:1.0.5'
+    implementation 'video.api:rtmpdroid:1.1.0'
 }
 ```
 
