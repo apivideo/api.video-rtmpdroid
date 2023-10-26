@@ -24,19 +24,40 @@ $dokka.location:video.api.rtmpdroid.amf/AmfEncoder/add/#kotlin.String#kotlin.Any
 $dokka.location:video.api.rtmpdroid.amf/AmfEncoder/encode/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-encoder/encode.html
 $dokka.location:video.api.rtmpdroid.amf/AmfEncoder/encode/#java.nio.ByteBuffer/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-encoder/encode.html
 $dokka.location:video.api.rtmpdroid.amf/AmfEncoder/minBufferSize/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-encoder/min-buffer-size.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.BOOLEAN///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-b-o-o-l-e-a-n/index.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.ECMA_ARRAY///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-e-c-m-a_-a-r-r-a-y/index.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.NULL///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-n-u-l-l/index.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.NUMBER///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-n-u-m-b-e-r/index.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.OBJECT///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-o-b-j-e-c-t/index.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.OBJECT_END///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-o-b-j-e-c-t_-e-n-d/index.html
-$dokka.location:video.api.rtmpdroid.amf/AmfType.STRING///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-s-t-r-i-n-g/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.BOOLEAN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-b-o-o-l-e-a-n/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.ECMA_ARRAY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-e-c-m-a_-a-r-r-a-y/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.NULL///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-n-u-l-l/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.NUMBER///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-n-u-m-b-e-r/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.OBJECT///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-o-b-j-e-c-t/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.OBJECT_END///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-o-b-j-e-c-t_-e-n-d/index.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType.STRING///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/-s-t-r-i-n-g/index.html
 $dokka.location:video.api.rtmpdroid.amf/AmfType///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/index.html
 $dokka.location:video.api.rtmpdroid.amf/AmfType/value/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/value.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType/valueOf/#kotlin.String/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/value-of.html
+$dokka.location:video.api.rtmpdroid.amf/AmfType/values/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.amf/-amf-type/values.html
+$dokka.location:video.api.rtmpdroid.internal////PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/index.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs.Companion///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/-companion/index.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs.Companion/fromMimeTypes/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/-companion/from-mime-types.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs.Companion/isSupportedCodec/#kotlin.String/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/-companion/is-supported-codec.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/index.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs/ExVideoCodecs/#kotlin.String?/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/-ex-video-codecs.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs/hasCodec/#kotlin.String/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/has-codec.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs/supportedCodecs/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/supported-codecs.html
+$dokka.location:video.api.rtmpdroid.internal/ExVideoCodecs/value/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-ex-video-codecs/value.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs.Companion///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/-companion/index.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs.Companion/fromMimeTypes/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/-companion/from-mime-types.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs.Companion/isSupportedCodec/#kotlin.String/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/-companion/is-supported-codec.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/index.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs/VideoCodecs/#kotlin.Int/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/-video-codecs.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs/hasCodec/#kotlin.String/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/has-codec.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs/supportedCodecs/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/supported-codecs.html
+$dokka.location:video.api.rtmpdroid.internal/VideoCodecs/value/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid.internal/-video-codecs/value.html
 $dokka.location:video.api.rtmpdroid////PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/index.html
-$dokka.location:video.api.rtmpdroid/PacketType.COMMAND///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-packet-type/-c-o-m-m-a-n-d/index.html
+$dokka.location:video.api.rtmpdroid/PacketType.COMMAND///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}api.video rtmpdroid library/video.api.rtmpdroid/-packet-type/-c-o-m-m-a-n-d/index.html
 $dokka.location:video.api.rtmpdroid/PacketType///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-packet-type/index.html
 $dokka.location:video.api.rtmpdroid/PacketType/value/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-packet-type/value.html
+$dokka.location:video.api.rtmpdroid/PacketType/valueOf/#kotlin.String/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-packet-type/value-of.html
+$dokka.location:video.api.rtmpdroid/PacketType/values/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-packet-type/values.html
 $dokka.location:video.api.rtmpdroid/Rtmp.Companion///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/-companion/index.html
 $dokka.location:video.api.rtmpdroid/Rtmp///PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/index.html
 $dokka.location:video.api.rtmpdroid/Rtmp/Rtmp/#kotlin.Boolean/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/-rtmp.html
@@ -50,6 +71,7 @@ $dokka.location:video.api.rtmpdroid/Rtmp/read/#kotlin.ByteArray#kotlin.Int#kotli
 $dokka.location:video.api.rtmpdroid/Rtmp/readPacket/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/read-packet.html
 $dokka.location:video.api.rtmpdroid/Rtmp/resume/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/resume.html
 $dokka.location:video.api.rtmpdroid/Rtmp/serve/#kotlin.Int/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/serve.html
+$dokka.location:video.api.rtmpdroid/Rtmp/supportedVideoCodecs/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/supported-video-codecs.html
 $dokka.location:video.api.rtmpdroid/Rtmp/timeout/#/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/timeout.html
 $dokka.location:video.api.rtmpdroid/Rtmp/write/#java.nio.ByteBuffer/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/write.html
 $dokka.location:video.api.rtmpdroid/Rtmp/write/#kotlin.ByteArray#kotlin.Int#kotlin.Int/PointingToDeclaration/api.video rtmpdroid library/video.api.rtmpdroid/-rtmp/write.html
@@ -66,4 +88,5 @@ $dokka.location:video.api.rtmpdroid/RtmpPacket/timestamp/#/PointingToDeclaration
 video.api.rtmpdroid
 video.api.rtmpdroid.amf
 video.api.rtmpdroid.amf.models
+video.api.rtmpdroid.internal
 
