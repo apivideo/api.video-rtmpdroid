@@ -4,7 +4,7 @@ project(rtmpdroid)
 include(ExternalProject)
 find_program(GIT "git")
 
-set(OPENSSL_VERSION "openssl-3.0.9")
+set(OPENSSL_VERSION "openssl-3.0.12")
 set(RTMP_VERSION "f1b83c10d8beb43fcc70a6e88cf4325499f25857")
 
 # OpenSSL - needs few executable such as perl and mv in PATH
