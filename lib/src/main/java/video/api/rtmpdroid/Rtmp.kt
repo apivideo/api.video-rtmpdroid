@@ -209,7 +209,9 @@ class Rtmp(private val enableWrite: Boolean = true) : Closeable {
      * @return number of bytes sent
      */
     fun write(array: ByteArray, offset: Int = 0, size: Int = array.size): Int {
-        val byteSent = nativeWrite(array, offset, size)
+        val byteSent = synchronized(this) {
+            nativeWrite(array, offset, size)
+        }
         when {
             byteSent < 0 -> {
                 throw SocketException("Connection error")
