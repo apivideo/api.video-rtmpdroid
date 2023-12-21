@@ -2,6 +2,13 @@
 
 All changes to this project will be documented in this file.
 
+## [1.2.0] - 2023-12-21
+
+- Introducing packed version: all shared libraries are packed into `librtmpdroid.so`
+- Upgrade to AGP 8.0
+- Upgrade openssl to 3.0.12
+- Fix synchronization issue in `write(ByteArray)`
+
 ## [1.1.0] - 2023-10-23
 
 - Add API to support enhanced RTMP features
