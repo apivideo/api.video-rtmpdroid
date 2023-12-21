@@ -31,6 +31,26 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    flavorDimensions "packaging"
+    productFlavors {
+        packed {
+            dimension "packaging"
+            versionNameSuffix "-packed"
+            externalNativeBuild.cmake {
+                arguments '-DPACKAGING=PACKED'
+            }
+            versionName "$VERSION_NAME-packed"
+        }
+        unpacked {
+            dimension "packaging"
+            externalNativeBuild.cmake {
+                arguments '-DPACKAGING=UNPACKED'
+            }
+            versionName VERSION_NAME
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -38,6 +58,15 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    publishing {
+        multipleVariants {
+            allVariants()
+            withJavadocJar()
+            withSourcesJar()
+        }
+    }
+
 }
 
 dokkaHtml {
