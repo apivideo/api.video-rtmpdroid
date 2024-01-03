@@ -2,6 +2,10 @@
 
 All changes to this project will be documented in this file.
 
+## [1.2.1] - 2024-01-03
+
+- Force usage of message with header type 0 when packet timestamp are back in time
+
 ## [1.2.0] - 2023-12-21
 
 - Introducing packed version: all shared libraries are packed into `librtmpdroid.so`
