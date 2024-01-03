@@ -1,0 +1,51 @@
+From 077dab84ddc15fabe7b0f9955f3fc0d33be1e56d Mon Sep 17 00:00:00 2001
+From: ThibaultBee <37510686+ThibaultBee@users.noreply.github.com>
+Date: Wed, 3 Jan 2024 10:12:39 +0100
+Subject: [PATCH] When packet are not in order, force the header of type 0
+
+---
+ librtmp/rtmp.c | 28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/librtmp/rtmp.c b/librtmp/rtmp.c
+index 20a27eb..ebdfc85 100644
+--- a/librtmp/rtmp.c
++++ b/librtmp/rtmp.c
+@@ -3977,16 +3977,24 @@ RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue)
+   prevPacket = r->m_vecChannelsOut[packet->m_nChannel];
+   if (prevPacket && packet->m_headerType != RTMP_PACKET_SIZE_LARGE)
+     {
+-      /* compress a bit by using the prev packet's attributes */
+-      if (prevPacket->m_nBodySize == packet->m_nBodySize
+-	  && prevPacket->m_packetType == packet->m_packetType
+-	  && packet->m_headerType == RTMP_PACKET_SIZE_MEDIUM)
+-	packet->m_headerType = RTMP_PACKET_SIZE_SMALL;
+-
+-      if (prevPacket->m_nTimeStamp == packet->m_nTimeStamp
+-	  && packet->m_headerType == RTMP_PACKET_SIZE_SMALL)
+-	packet->m_headerType = RTMP_PACKET_SIZE_MINIMUM;
+-      last = prevPacket->m_nTimeStamp;
++      if (packet->m_nTimeStamp < prevPacket->m_nTimeStamp) 
++        {
++          /* if packet are going backward, we force header type 0 */
++          packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
++        }
++      else 
++        {
++          /* compress a bit by using the prev packet's attributes */
++          if (prevPacket->m_nBodySize == packet->m_nBodySize
++        && prevPacket->m_packetType == packet->m_packetType
++        && packet->m_headerType == RTMP_PACKET_SIZE_MEDIUM)
++      packet->m_headerType = RTMP_PACKET_SIZE_SMALL;
++
++          if (prevPacket->m_nTimeStamp == packet->m_nTimeStamp
++        && packet->m_headerType == RTMP_PACKET_SIZE_SMALL)
++      packet->m_headerType = RTMP_PACKET_SIZE_MINIMUM;
++          last = prevPacket->m_nTimeStamp;
++        }
+     }
+ 
+   if (packet->m_headerType > 3)	/* sanity */
+-- 
+2.39.1
+
